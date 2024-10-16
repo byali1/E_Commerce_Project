@@ -32,6 +32,9 @@ function LayoutComponent() {
                             <li className="nav-item mx-2">
                                 <Link to="/products">Products</Link>
                             </li>
+                            <li className="nav-item mx-2">
+                                <Link to="/admin" className="text-danger">Admin</Link>
+                            </li>
                         </ul>
                         <Link to="/cart" className="mx-2">Cart</Link>
                         <button onClick={logOut} className="btn btn-outline-danger" type="submit">Log out</button>

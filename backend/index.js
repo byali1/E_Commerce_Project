@@ -15,7 +15,7 @@ const jwt = require("jsonwebtoken");
 app.use(cors());
 app.use(express.json());
 
-const uri =  `${rootMongo}${passwordMongo}@${sourceMongo}`;
+const uri = `${rootMongo}${passwordMongo}@${sourceMongo}`;
 mongoose.connect(uri).then(response => {
     console.log("Connected to MongoDB");
 }).catch(err => {
@@ -47,7 +47,8 @@ const productSchema = new mongoose.Schema({
     description: String,
     price: Number,
     imageUrl: String,
-    stock: Number
+    stock: Number,
+    categoryName: String
 })
 const Product = mongoose.model("Product", productSchema);
 
@@ -78,6 +79,7 @@ const options = {
     expiresIn: "1h"
 }
 
+//? API Operations
 
 //* Register
 app.post("/auth/register", async (req, res) => {
@@ -122,9 +124,81 @@ app.post("/auth/login", async (req, res) => {
         }
 
     } catch (error) {
-        
+
     }
 })
+
+//FileUpload
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "uploads/")
+    },
+    filename: function (req, file, cb) {
+        cb(null, getFormattedDate() + "-" + uuidv4() + "-" + file.originalname);
+    }
+});
+
+const upload = multer({ storage: storage });
+
+//* GetProducts
+app.get("/products", async (req, res) => {
+    try {
+        const products = await Product.find({}).sort({ name: 1 });
+        res.json(products);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+//* AddProduct
+app.post("/add-product", upload.single("image"), async (req, res) => {
+    try {
+        const { name, description, price, stock, categoryName } = req.body;
+
+        const product = new Product({
+            _id: uuidv4(),
+            name: name,
+            description: description,
+            price: price,
+            imageUrl: req.file.path,
+            stock: stock,
+            categoryName: categoryName
+        });
+
+        await product.save();
+        res.json({ message: `Product (${product.name}) ADDED successfully!` });
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+
+})
+
+//* DeleteProduct
+app.post("/delete-product", async (req, res)=>{
+    try {
+        const {_id} = req.body;
+        const {name} = req.body;
+        await Product.findByIdAndDelete(_id);
+        res.json({message: `Product (${name}) DELETED successfully!`});
+    } catch (error) {
+        res.status(404).json({message: error.message});
+    }
+})
+
+//? API Operations - Final
+
+//? Other Operations
+function getFormattedDate() {
+    const date = new Date();
+    const day = date.getDate(); // Day
+    const month = date.getMonth() + 1; // Month
+    const year = date.getFullYear(); // Year
+
+    const formattedDay = day < 10 ? `0${day}` : day;
+    const formattedMonth = month < 10 ? `0${month}` : month;
+
+    return `${formattedDay}_${formattedMonth}_${year}`;
+}
 
 
 const port = 5000;
