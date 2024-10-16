@@ -4,7 +4,10 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 function LayoutComponent() {
     const navigate = useNavigate(); 
     const logOut=() => {
-       navigate("/login");
+        localStorage.removeItem('token');  
+        localStorage.removeItem('user'); 
+        navigate("/login");
+
     }
 
     useEffect(() =>{

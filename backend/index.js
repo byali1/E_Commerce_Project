@@ -84,7 +84,11 @@ const options = {
 //* Register
 app.post("/auth/register", async (req, res) => {
     try {
-        const { firstName, lastName, email, password } = req.body;
+        const firstName = trimString(req.body.firstName);
+        const lastName = trimString(req.body.lastName);
+        const email = trimString(req.body.email);
+        const password = trimString(req.body.password);
+
         let user = new User({
             _id: uuidv4(),
             firstName,
@@ -110,7 +114,10 @@ app.post("/auth/register", async (req, res) => {
 //* Login
 app.post("/auth/login", async (req, res) => {
     try {
-        const { email, password } = req.body;
+
+        const email = trimString(req.body.email);
+        const password = trimString(req.body.password);
+
         const users = await User.find({ email: email, password: password });
 
         if (users.length == 0) {
@@ -157,12 +164,12 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
 
         const product = new Product({
             _id: uuidv4(),
-            name: name,
+            name: trimString(name),
             description: description,
             price: price,
             imageUrl: req.file.path,
             stock: stock,
-            categoryName: categoryName
+            categoryName: trimString(categoryName)
         });
 
         await product.save();
@@ -174,20 +181,20 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
 })
 
 //* DeleteProduct
-app.post("/delete-product", async (req, res)=>{
+app.post("/delete-product", async (req, res) => {
     try {
-        const {_id} = req.body;
-        const {name} = req.body;
+        const { _id } = req.body;
+        const { name } = req.body;
         await Product.findByIdAndDelete(_id);
-        res.json({message: `Product (${name}) DELETED successfully!`});
+        res.json({ message: `Product (${name}) DELETED successfully!` });
     } catch (error) {
-        res.status(404).json({message: error.message});
+        res.status(404).json({ message: error.message });
     }
 })
 
 //? API Operations - Final
 
-//? Other Operations
+//* Other Operations
 function getFormattedDate() {
     const date = new Date();
     const day = date.getDate(); // Day
@@ -200,6 +207,9 @@ function getFormattedDate() {
     return `${formattedDay}_${formattedMonth}_${year}`;
 }
 
+function trimString(str) {
+    return str.trim();
+}
 
 const port = 5000;
 

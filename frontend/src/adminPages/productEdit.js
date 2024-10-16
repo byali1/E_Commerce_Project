@@ -24,7 +24,7 @@ function ProductEditComponent() {
                 let model = { _id: id, name: name };
 
                 let response = await axios.post('http://localhost:5000/delete-product', model);
-                alert(response.data.message);
+                //alert(response.data.message);
 
                 // Reload the products
                 getProducts();
