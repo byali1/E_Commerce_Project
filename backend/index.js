@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
     _id: String,
     firstName: String,
     lastName: String,
+    username: String,
     email: String,
     password: String
 });
@@ -108,10 +109,10 @@ app.post("/auth/register", async (req, res) => {
 app.post("/auth/login", async (req, res) => {
     try {
         const { email, password } = req.body;
-        const users = await User.findOne({ email: email, password: password });
+        const users = await User.find({ email: email, password: password });
 
         if (users.length == 0) {
-            res.status(404).json({ message: "User not found" });
+            res.status(500).json({ message: "User not found" });
         } else {
             const payload = {
                 user: users[0]
