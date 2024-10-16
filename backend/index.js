@@ -112,7 +112,7 @@ app.post("/auth/login", async (req, res) => {
         const users = await User.find({ email: email, password: password });
 
         if (users.length == 0) {
-            res.status(500).json({ message: "User not found" });
+            return res.status(404).json({ message: "User not found" });
         } else {
             const payload = {
                 user: users[0]
