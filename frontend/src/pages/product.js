@@ -6,6 +6,7 @@ import axios from 'axios';
 function ProductComponent() {
 
     const [products, setProducts] = useState([]);
+    const rootUrl = "http://localhost:5000/";
 
     useEffect(() => {
         const getProducts = async () => {
@@ -24,9 +25,9 @@ function ProductComponent() {
                         <div key={index} className="col-md-3 mb-4">
                             <div className="card product-card h-100 shadow-sm">
                                 <div className='text-center'>
-                                    <span className="badge bg-dark">{product.categoryName}</span>
+                                    <span className="badge bg-dark my-2">{product.categoryName}</span>
                                 </div>
-                                <img src={product.imageUrl} className="card-img-top" alt={product.name} />
+                                <img src={`${rootUrl}${product.imageUrl}`} className="card-img-top" alt={product.name} />
                                 <div className="card-body">
                                     <h5 className="card-title">{product.name}</h5>
                                     <p className="card-text text-muted">{product.description}</p>

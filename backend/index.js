@@ -5,6 +5,8 @@ const rootMongo = process.env.ROOT;
 const passwordMongo = process.env.MONGODB_PASSWORD;
 const sourceMongo = process.env.SOURCE;
 
+const path = require('path');
+
 const express = require("express");
 const app = express();
 const { v4: uuidv4 } = require("uuid");
@@ -14,6 +16,7 @@ const jwt = require("jsonwebtoken");
 
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname,  'uploads')));
 
 const uri = `${rootMongo}${passwordMongo}@${sourceMongo}`;
 mongoose.connect(uri).then(response => {
