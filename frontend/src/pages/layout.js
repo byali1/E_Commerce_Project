@@ -1,30 +1,38 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
+import { jwtDecode } from 'jwt-decode';
 
 function LayoutComponent() {
     const navigate = useNavigate();
-
     const [isAdmin, setIsAdmin] = useState(false);
 
     const logOut = () => {
         localStorage.removeItem('token');
-        localStorage.removeItem('user');
         navigate("/login");
-
-    }
+    };
 
     useEffect(() => {
         const token = localStorage.getItem("token");
+      
         if (!token) {
             navigate("/login");
+            return;
         }
 
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user && user.isAdmin) {
-            setIsAdmin(true);
+        try {
+            const decodedToken = jwtDecode(token);
+
+            if (decodedToken.user && decodedToken.user.isAdmin) {
+                setIsAdmin(true); 
+            } else {
+                setIsAdmin(false); 
+            }
+
+        } catch (error) {
+            navigate("/login"); 
         }
 
-    },[navigate])
+    }, [navigate]);
 
     return (
         <>
@@ -45,13 +53,14 @@ function LayoutComponent() {
                             <li className="nav-item mx-2">
                                 <Link to="/products">Products</Link>
                             </li>
-                            {isAdmin && <li className="nav-item mx-2">
-                                <Link to="/admin" className="text-danger">Admin</Link>
-                            </li>}
+                            {isAdmin && (
+                                <li className="nav-item mx-2">
+                                    <Link to="/admin" className="text-danger">Admin</Link>
+                                </li>
+                            )}
                         </ul>
                         <Link to="/cart" className="mx-2">Cart</Link>
                         <button onClick={logOut} className="btn btn-outline-danger" type="submit">Log out</button>
-
                     </div>
                 </div>
             </nav>

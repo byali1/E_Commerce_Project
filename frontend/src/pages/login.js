@@ -17,7 +17,7 @@ function LoginComponent() {
             let response = await axios.post("http://localhost:5000/auth/login", model);
 
             localStorage.setItem("token", response.data.token);
-            localStorage.setItem("user", JSON.stringify(response.data.user));
+            //localStorage.setItem("user", JSON.stringify(response.data.user));
             
             navigate("/");
 

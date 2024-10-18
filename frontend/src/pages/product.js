@@ -10,7 +10,11 @@ function ProductComponent() {
 
     useEffect(() => {
         const getProducts = async () => {
-            const response = await axios.get('http://localhost:5000/products');
+            const response = await axios.get('http://localhost:5000/products',{
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
             setProducts(response.data);
         };
 

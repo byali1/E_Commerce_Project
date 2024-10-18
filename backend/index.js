@@ -17,6 +17,7 @@ const jwt = require("jsonwebtoken");
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, 'uploads')));
+app.use('/admin', adminOnly);
 
 const uri = `${rootMongo}${passwordMongo}@${sourceMongo}`;
 mongoose.connect(uri).then(response => {
@@ -162,8 +163,10 @@ app.get("/products", async (req, res) => {
     }
 });
 
+
+//!Admin
 //* AddProduct
-app.post("/add-product", upload.single("image"), async (req, res) => {
+app.post("/admin/add-product", upload.single("image"), async (req, res) => {
     try {
         const { name, description, price, stock, categoryName } = req.body;
 
@@ -182,20 +185,32 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
+});
 
-})
 
-//* DeleteProduct
-app.post("/delete-product", async (req, res) => {
+//!Admin
+//* DeleteProduct 
+app.post("/admin/add-product", upload.single("image"), async (req, res) => {
     try {
-        const { _id } = req.body;
-        const { name } = req.body;
-        await Product.findByIdAndDelete(_id);
-        res.json({ message: `Product (${name}) DELETED successfully!` });
+        const { name, description, price, stock, categoryName } = req.body;
+
+        const product = new Product({
+            _id: uuidv4(),
+            name: trimString(name),
+            description: description,
+            price: price,
+            imageUrl: req.file.path,
+            stock: stock,
+            categoryName: trimString(categoryName)
+        });
+
+        await product.save();
+        res.json({ message: `Product (${product.name}) ADDED successfully!` });
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
-})
+});
+
 
 //? API Operations - Final
 
@@ -215,6 +230,54 @@ function getFormattedDate() {
 function trimString(str) {
     return str.trim();
 }
+
+//* Middleware for admin check
+function verifyAdmin(req, res, next) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(403).json({ message: "No token provided, access denied" });
+    }
+
+    const token = authHeader.split(' ')[1]; // Bearer <token>
+    jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: "Unauthorized access" });
+        }
+
+        // check admin
+        if (!decoded.user.isAdmin) {
+            return res.status(403).json({ message: "Admin access required" });
+        }
+
+        
+        next();
+    });
+}
+
+// Admin middleware for protecting admin routes
+function adminOnly(req, res, next) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(403).json({ message: "No token provided, access denied" });
+    }
+
+    const token = authHeader.split(' ')[1]; // Bearer <token>
+    jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: "Unauthorized access" });
+        }
+        
+        if (!decoded.user.isAdmin) {
+            return res.status(403).json({ message: "Admin access required" });
+        }
+
+        next();
+    });
+}
+
+
 
 const port = 5000;
 
