@@ -16,7 +16,7 @@ const jwt = require("jsonwebtoken");
 
 app.use(cors());
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname,  'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, 'uploads')));
 
 const uri = `${rootMongo}${passwordMongo}@${sourceMongo}`;
 mongoose.connect(uri).then(response => {
@@ -32,7 +32,8 @@ const userSchema = new mongoose.Schema({
     lastName: String,
     username: String,
     email: String,
-    password: String
+    password: String,
+    isAdmin: Boolean 
 });
 
 userSchema.virtual('fullName').get(function () {
@@ -98,7 +99,8 @@ app.post("/auth/register", async (req, res) => {
             lastName,
             fullName: firstName + " " + lastName,
             email,
-            password
+            password,
+            isAdmin: false
         });
         await user.save();
 

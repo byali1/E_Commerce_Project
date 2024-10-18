@@ -1,20 +1,30 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
 function LayoutComponent() {
-    const navigate = useNavigate(); 
-    const logOut=() => {
-        localStorage.removeItem('token');  
-        localStorage.removeItem('user'); 
+    const navigate = useNavigate();
+
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    const logOut = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         navigate("/login");
 
     }
 
-    useEffect(() =>{
-        if (!localStorage.getItem("token")) {
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
             navigate("/login");
         }
-    })
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.isAdmin) {
+            setIsAdmin(true);
+        }
+
+    },[navigate])
 
     return (
         <>
@@ -35,9 +45,9 @@ function LayoutComponent() {
                             <li className="nav-item mx-2">
                                 <Link to="/products">Products</Link>
                             </li>
-                            <li className="nav-item mx-2">
+                            {isAdmin && <li className="nav-item mx-2">
                                 <Link to="/admin" className="text-danger">Admin</Link>
-                            </li>
+                            </li>}
                         </ul>
                         <Link to="/cart" className="mx-2">Cart</Link>
                         <button onClick={logOut} className="btn btn-outline-danger" type="submit">Log out</button>

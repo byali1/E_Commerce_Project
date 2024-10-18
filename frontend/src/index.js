@@ -13,7 +13,7 @@ import LoginComponent from './pages/login';
 import RegisterComponent from './pages/register';
 import AdminHomePageComponent from './adminPages/adminHomePage';
 import ProductEditComponent from './adminPages/productEdit';
-
+import AdminRoute from './AdminRoute';
 
 
 
@@ -36,9 +36,12 @@ function AppComponent() {
                     <Route path='register' element={<RegisterComponent />}></Route>
 
 
-                    <Route path='/admin' element={<LayoutComponent />}>
-                        <Route index element={<AdminHomePageComponent />}></Route>
-                        <Route path='edit-products' element={<ProductEditComponent />}></Route>
+                   {/* Admin */}
+                   <Route path='/admin' element={<AdminRoute />}>
+                        <Route path='' element={<LayoutComponent />}>
+                            <Route index element={<AdminHomePageComponent />}></Route>
+                            <Route path='edit-products' element={<ProductEditComponent />}></Route>
+                        </Route>
                     </Route>
 
                 </Routes>
