@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
     username: String,
     email: String,
     password: String,
-    isAdmin: Boolean 
+    isAdmin: Boolean
 });
 
 userSchema.virtual('fullName').get(function () {
@@ -61,10 +61,7 @@ const Product = mongoose.model("Product", productSchema);
 const cartSchema = new mongoose.Schema({
     _id: String,
     userId: String,
-    productId: String,
-    quantity: Number,
-    price: Number
-
+    productId: String
 })
 const Cart = mongoose.model("Cart", cartSchema);
 
@@ -211,6 +208,78 @@ app.post("/admin/add-product", upload.single("image"), async (req, res) => {
     }
 });
 
+//* Add to Cart
+app.post("/products/add-to-cart", async (req, res) => {
+    try {
+        const { productId, userId } = req.body;
+
+        let product = await Product.findById(productId);
+
+        if (!product) {
+            return res.status(404).json({ message: "Product not found." });
+        }
+
+        if (product.stock <= 0) {
+            return res.status(400).json({ message: "Product is out of stock." });
+        }
+
+        let cart = new Cart({
+            _id: uuidv4(),
+            userId: userId,
+            productId: productId
+        });
+
+        await cart.save();
+
+        res.status(200).json({ message: `${product.name} added to cart.` });
+
+    } catch (error) {
+        console.error("Error adding product to cart:", error);
+
+        res.status(500).json({ message: "An error occurred while adding the product to the cart." });
+    }
+});
+
+//* Products in cart
+app.post("/cart/products", async (req, res) => {
+    try {
+        const { userId } = req.body;
+        
+        const productsInCart = await Cart.aggregate([
+
+            {
+                $match: {userId: userId}
+            },
+            {
+                $lookup: {
+                    from: "products", // products koleksiyonundan veri al
+                    localField: "productId", // Cart içindeki productId ile eşleştir
+                    foreignField: "_id", // products koleksiyonundaki _id ile eşleştir
+                    as: "producsInCartPerUser" 
+                }
+            }
+        ]);
+
+        res.json(productsInCart);
+    } catch (error) {
+        //console.error("Error fetching products in cart:", error);
+        res.status(500).json({ message: "An error occurred while fetching products in cart." });
+    }
+});
+
+//* Remove Product from Cart
+app.post("/cart/remove", async (req, res) => {
+    try {
+        const { userId, productId } = req.body;
+        await Cart.deleteMany({ userId: userId, productId: productId });  
+        res.status(200).json({ message: "Product removed from cart." });
+    } catch (error) {
+        console.error("Error removing product from cart:", error);
+        res.status(500).json({ message: "An error occurred while removing the product from the cart." });
+    }
+});
+
+
 
 //? API Operations - Final
 
@@ -250,7 +319,7 @@ function verifyAdmin(req, res, next) {
             return res.status(403).json({ message: "Admin access required" });
         }
 
-        
+
         next();
     });
 }
@@ -268,7 +337,7 @@ function adminOnly(req, res, next) {
         if (err) {
             return res.status(401).json({ message: "Unauthorized access" });
         }
-        
+
         if (!decoded.user.isAdmin) {
             return res.status(403).json({ message: "Admin access required" });
         }
